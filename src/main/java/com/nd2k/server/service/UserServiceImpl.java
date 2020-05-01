@@ -34,19 +34,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto login(UserRequestDto userRequestDto) throws BusinessException {
-        try {
-            Optional<User> user = userRepository.findUserByEmail(userRequestDto.getEmail());
-            if(passwordEncoder.matches(userRequestDto.getPassword(), user.get().getPassword())) {
-                UserResponseDto userResponseDto = new UserResponseDto();
-                userResponseDto.setEmail(user.get().getEmail());
-                userResponseDto.setPassword(user.get().getPassword());
-                userResponseDto.setHttpStatus(HttpStatus.OK);
-                return userResponseDto;
-            } else {
-                throw new BusinessException("User not found", "The given credentials are wrong", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception ex) {
-            throw new BusinessException("Technical Error", "A technical problem occurs", HttpStatus.INTERNAL_SERVER_ERROR);
+        Optional<User> user = userRepository.findUserByEmail(userRequestDto.getEmail());
+        user.orElseThrow(() -> new BusinessException("User not found", "The given credentials are wrong", HttpStatus.NOT_FOUND));
+        if(passwordEncoder.matches(userRequestDto.getPassword(), user.get().getPassword())) {
+            UserResponseDto userResponseDto = new UserResponseDto();
+            userResponseDto.setEmail(user.get().getEmail());
+            userResponseDto.setPassword(user.get().getPassword());
+            userResponseDto.setHttpStatus(HttpStatus.OK);
+            return userResponseDto;
+        } else {
+            throw new BusinessException("User not found", "The given credentials are wrong", HttpStatus.NOT_FOUND);
         }
     }
 }
