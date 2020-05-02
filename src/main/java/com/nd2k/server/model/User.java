@@ -31,6 +31,8 @@ public class User {
     @Size(min = 4, max = 50, message = "Password field must contain between 4 & 50 charaters.")
     private String password;
 
+    private Boolean isActive;
+
     @CreatedDate
     private DateTime createAt;
 

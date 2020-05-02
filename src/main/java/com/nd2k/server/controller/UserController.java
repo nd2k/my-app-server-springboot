@@ -1,11 +1,14 @@
 package com.nd2k.server.controller;
 
+import com.nd2k.server.dto.AuthenticationResponse;
 import com.nd2k.server.dto.UserRequestDto;
 import com.nd2k.server.dto.UserResponseDto;
 import com.nd2k.server.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping(value = "/register")
     public ResponseEntity<Object> register(@RequestBody UserRequestDto userRequestDto) {
@@ -26,7 +30,10 @@ public class UserController {
 
     @PostMapping(value = "/login")
     public ResponseEntity<Object> login(@RequestBody UserRequestDto userRequestDto) {
-        UserResponseDto userResponseDto = userService.login(userRequestDto);
-        return new ResponseEntity<>(userResponseDto, userResponseDto.getHttpStatus());
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                userRequestDto.getEmail(), userRequestDto.getPassword()
+        ));
+        AuthenticationResponse authenticationResponse = userService.login(userRequestDto);
+        return new ResponseEntity<>(authenticationResponse, HttpStatus.OK);
     }
 }

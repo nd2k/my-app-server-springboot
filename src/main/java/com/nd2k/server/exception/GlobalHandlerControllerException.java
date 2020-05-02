@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice(basePackages = {"com.nd2k.server"})
 public class GlobalHandlerControllerException extends ResponseEntityExceptionHandler {
 
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BusinessExceptionDto> exceptionHandler(Exception ex) {
         BusinessExceptionDto response = new BusinessExceptionDto();
@@ -47,4 +48,6 @@ public class GlobalHandlerControllerException extends ResponseEntityExceptionHan
         businessExceptionDto.setErrorMessage("The request received cannot be red");
         return new ResponseEntity<>(businessExceptionDto, businessExceptionDto.getHttpStatus());
     }
+
+
 }
