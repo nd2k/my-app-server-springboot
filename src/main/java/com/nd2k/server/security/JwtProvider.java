@@ -3,6 +3,7 @@ package com.nd2k.server.security;
 
 import com.nd2k.server.exception.BusinessException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
@@ -47,6 +49,16 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(principal.getUsername())
                 .signWith(getPrivateKey())
+                .setIssuedAt(java.util.Date.from(Instant.now()))
+                .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
+                .compact();
+    }
+
+    public String generateTokenWithEmail(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .signWith(getPrivateKey())
+                .setIssuedAt(java.util.Date.from(Instant.now()))
                 .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
                 .compact();
     }
@@ -59,9 +71,15 @@ public class JwtProvider {
         }
     }
 
-    public boolean validateJwtToken(String jwtFromRequest) {
-        parser().setSigningKey(getPublicKey()).parseClaimsJws(jwtFromRequest);
-        return true;
+    public boolean validateJwtToken(String jwtFromRequest, HttpServletRequest httpServletRequest) {
+        try {
+            parser().setSigningKey(getPublicKey()).parseClaimsJws(jwtFromRequest);
+            return true;
+        } catch (ExpiredJwtException ex) {
+            System.out.println("Expired JWT Token");
+            httpServletRequest.setAttribute("expired", ex.getMessage());
+        }
+        return false;
     }
 
     private PublicKey getPublicKey() {

@@ -1,6 +1,7 @@
 package com.nd2k.server.exception;
 
 import com.nd2k.server.dto.BusinessExceptionDto;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,5 @@ public class GlobalHandlerControllerException extends ResponseEntityExceptionHan
         businessExceptionDto.setErrorMessage("The request received cannot be red");
         return new ResponseEntity<>(businessExceptionDto, businessExceptionDto.getHttpStatus());
     }
-
 
 }
