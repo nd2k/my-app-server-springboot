@@ -24,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<User> userOptional = userRepository.findUserByEmail(email);
         User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("No user found with email: " + email));
-        return new org.springframework.security.core.userdetails.User(
+        org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
                 user.getIsActive(),
@@ -32,6 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 true,
                 true,
                 getAuthorities());
+        return userDetails;
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities() {

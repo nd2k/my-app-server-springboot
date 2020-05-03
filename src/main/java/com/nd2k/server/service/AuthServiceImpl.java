@@ -16,13 +16,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class UserServiceImpl implements UserService {
+public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
             User user = new User();
             user.setEmail(userRequestDto.getEmail());
             user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+            user.setIsActive(true);
             userRepository.save(user);
             return UserMapper.userToUserResponseDto(user);
         }
@@ -42,12 +43,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthenticationResponse login(@RequestBody UserRequestDto userRequestDto) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+    public AuthenticationResponse login(UserRequestDto userRequestDto) {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 userRequestDto.getEmail(),
                 userRequestDto.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtProvider.generateToken(authentication);
-        return new AuthenticationResponse(token, userRequestDto.getEmail());
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtProvider.generateToken(authenticate);
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse();
+        authenticationResponse.setAuthenticationToken(token);
+        authenticationResponse.setRefreshToken("");
+        authenticationResponse.setExpiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()));
+        authenticationResponse.setEmail(userRequestDto.getEmail());
+        return authenticationResponse;
     }
 }

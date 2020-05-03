@@ -6,7 +6,7 @@ import com.nd2k.server.dto.UserResponseDto;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface UserService {
+public interface AuthService {
 
     UserResponseDto register(UserRequestDto userRequestDto);
 
